@@ -48,7 +48,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 npm run dev
 ```
 
-이제 브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속하여 애플리케이션을 확인할 수 있습니다.
+이제 브라우저에서 [http://localhost:3001](http://localhost:3001)으로 접속하여 애플리케이션을 확인할 수 있습니다.
 
 ## 📁 폴더 구조
 
