@@ -1,9 +1,11 @@
 "use client";
 
-import api from "@/lib/api";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { login } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,22 +19,15 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    if (!process.env.NEXT_PUBLIC_API_URL) {
-      setError(
-        "API 주소가 설정되지 않았습니다. .env.local 파일을 확인해주세요."
-      );
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const response = await api.post("/auth/login", { email, password });
-      console.log("Login successful:", response.data);
-      // NOTE: In a real app, you would store the token from response.data here
+      const { access_token } = await login({ email, password });
+      if (typeof window !== "undefined") {
+        localStorage.setItem("accessToken", access_token);
+      }
       router.push("/dashboard");
     } catch (err) {
-      console.error("Login failed:", err);
       setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -41,70 +36,46 @@ export default function LoginPage() {
   return (
     <main className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
-          HR Admin 로그인
-        </h1>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            HR Admin 로그인
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            시스템에 접근하려면 로그인하세요.
+          </p>
+        </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && <p className="text-sm text-center text-red-500">{error}</p>}
-          <div className="-space-y-px rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">이메일 주소</Label>
+              <Input
+                id="email"
                 type="email"
-                autoComplete="email"
+                placeholder="admin@example.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="relative block w-full px-3 py-2 bg-transparent border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="이메일 주소"
                 disabled={isLoading}
               />
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password">비밀번호</Label>
+              <Input
                 id="password"
-                name="password"
                 type="password"
-                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="relative block w-full px-3 py-2 bg-transparent border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="비밀번호"
                 disabled={isLoading}
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-              />
-              <label
-                htmlFor="remember-me"
-                className="block ml-2 text-sm text-gray-900 dark:text-gray-300"
-              >
-                기억하기
-              </label>
-            </div>
-          </div>
+          {error && <p className="text-sm text-center text-red-500">{error}</p>}
 
-          <div>
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? "로그인 중..." : "로그인"}
-            </Button>
-          </div>
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? "로그인 중..." : "로그인"}
+          </Button>
         </form>
       </div>
     </main>
